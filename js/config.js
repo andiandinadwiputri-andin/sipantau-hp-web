@@ -11,7 +11,9 @@
    kata sandi. Keamanan data dijaga oleh login NIP + kata sandi di server.
 */
 window.SIPANTAU_CONFIG = {
-  GAS_URL: https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnRtoDZRD0iBZdWUnAw25pEBuev--1kEOQb6d3b2WCUIiVWrjknVpcru5kZ3RkIdMvYIXco9B18NV3K77y4zbyfxD3Se7WHLZuhxeP_nLAt4NAR0KGy6lLVHZ8x8n-_iwiPasM1w9S9ZjjfDMyvCDMeeZm7vyXieRehnIf9YMn4PmU3jNZwXkRDGfBuJuSEX4RuO07WoVs874Us-d_lmg9ljDgJuiseJvtDj5w1BFuwHXxROzwKirplSUIJ-1QW4Tt37DvuY-wtZnNtxv68o2PeOmVteOw&lib=Mvy9PJEyFFPlGbSNniSTmCaKsRpcr8Sdm
+  GAS_URL: https://script.google.com/macros/s/AKfycbw4OzK0eO6rqFcPjL542EknlAk44ycjlnDC2IszPOZvLVGN9ES-42bE5-W4EqQDR_zG/exec
+git commit -m "Perubahan ..."
+git push
   // Batas waktu tunggu respons server (milidetik). PDF bulanan bisa butuh ±30 detik.
   API_TIMEOUT_MS: 90000,
 
