@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#13254A">
+  <meta name="description" content="SIPANTAU-HP — Sistem pengawasan & penitipan HP petugas Lapas Kelas IIB Nabire.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <!-- Keamanan: hanya izinkan skrip dari situs ini + CDN pustaka, koneksi hanya ke Google Apps Script -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob:; connect-src https://script.google.com https://script.googleusercontent.com; media-src 'self' blob:; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>SIPANTAU-HP | Lapas Kelas IIB Nabire</title>
+
+  <!-- Bootstrap 5 + Ikon + Font -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Buka koneksi lebih awal ke backend GAS & CDN (hemat 100–300 ms di 4G) -->
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+  <link rel="dns-prefetch" href="https://script.googleusercontent.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <noscript><div style="padding:1rem;background:#C62828;color:#fff;text-align:center">Aktifkan JavaScript untuk memakai SIPANTAU-HP.</div></noscript>
+
+  <!-- Indikator proses ke server -->
+  <div id="busyBar" class="busy-bar"></div>
+
+  <!-- Loading awal -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner-border" role="status"><span class="visually-hidden">Memuat…</span></div>
+    <div class="font-display fw-bold">SIPANTAU-HP</div>
+    <small class="text-white-50">Lapas Kelas IIB Nabire</small>
+  </div>
+
+  <!-- ═══════════ LAYAR LOGIN ═══════════ -->
+  <div id="screenLogin" class="auth-screen hidden">
+    <div class="auth-card">
+      <div class="auth-head">
+        <div class="logo-row" data-logos></div>
+        <div class="eyebrow">Kementerian Imigrasi dan Pemasyarakatan RI</div>
+        <h1>SIPANTAU-HP</h1>
+        <p id="loginInstansi">Lembaga Pemasyarakatan Kelas IIB Nabire</p>
+      </div>
+      <div class="auth-body">
+        <p class="small text-secondary-x mb-3">Sistem pengawasan &amp; penitipan HP petugas. Masuk menggunakan NIP dan kata sandi Anda.</p>
+        <form id="formLogin" novalidate>
+          <div class="mb-3">
+            <label class="form-label" for="loginNip">NIP / Nomor Induk</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+              <input type="text" class="form-control mono" id="loginNip" autocomplete="username" inputmode="text" required placeholder="Masukkan NIP Anda">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="loginSandi">Kata Sandi</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" class="form-control" id="loginSandi" autocomplete="current-password" required>
+              <button class="btn btn-soft" type="button" data-toggle-pass="loginSandi" aria-label="Tampilkan kata sandi"><i class="bi bi-eye"></i></button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-navy w-100 py-2"><i class="bi bi-box-arrow-in-right me-1"></i> Masuk</button>
+        </form>
+        <div class="text-center mt-3 small text-secondary-x">
+          <i class="bi bi-shield-lock"></i> Akses terbatas petugas terdaftar • Zona waktu WIT
+        </div>
+        <div class="text-center mt-2">
+          <button class="btn btn-sm btn-link text-secondary-x" type="button" data-act="tema"><i class="bi bi-circle-half"></i> Mode gelap/terang</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ LAYAR GANTI SANDI (WAJIB) ═══════════ -->
+  <div id="screenGantiSandi" class="auth-screen hidden">
+    <div class="auth-card">
+      <div class="auth-head">
+        <div class="eyebrow">Keamanan Akun</div>
+        <h1 style="font-size:1.15rem">Ganti Kata Sandi</h1>
+        <p>Anda masih memakai kata sandi bawaan. Wajib diganti sebelum melanjutkan.</p>
+      </div>
+      <div class="auth-body">
+        <form id="formGantiSandi" novalidate>
+          <div class="mb-3">
+            <label class="form-label" for="gsLama">Kata sandi lama</label>
+            <input type="password" class="form-control" id="gsLama" autocomplete="current-password" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="gsBaru">Kata sandi baru</label>
+            <input type="password" class="form-control" id="gsBaru" autocomplete="new-password" required minlength="8">
+            <div class="form-text">Minimal 8 karakter, berisi huruf dan angka.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="gsUlang">Ulangi kata sandi baru</label>
+            <input type="password" class="form-control" id="gsUlang" autocomplete="new-password" required>
+          </div>
+          <button type="submit" class="btn btn-gold w-100 py-2"><i class="bi bi-key me-1"></i> Simpan Kata Sandi</button>
+          <button type="button" class="btn btn-link w-100 mt-1 text-secondary-x" data-act="keluar">Batal &amp; keluar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ APLIKASI (SHELL SPA) ═══════════ -->
+  <div id="appShell" class="hidden">
+    <nav id="sidebar" class="sidebar" aria-label="Menu utama">
+      <div class="sidebar-brand">
+        <div class="logo-row" data-logos></div>
+        <div class="app">SIPANTAU-HP</div>
+        <div class="sub">Lapas Kelas IIB Nabire</div>
+      </div>
+      <ul id="sidebarNav" class="sidebar-nav"></ul>
+      <div class="sidebar-foot">
+        <div class="user">
+          <span class="avatar" id="sbAvatar">--</span>
+          <div class="min-w-0">
+            <div class="nm truncate" id="sbNama">-</div>
+            <div class="rl" id="sbPeran">-</div>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-soft flex-fill" type="button" data-act="tema" aria-label="Mode gelap"><i class="bi bi-circle-half"></i></button>
+          <button class="btn btn-sm btn-red flex-fill" type="button" data-act="keluar"><i class="bi bi-box-arrow-left"></i> Keluar</button>
+        </div>
+      </div>
+    </nav>
+    <div id="sidebarOverlay" class="sidebar-overlay" data-act="tutupSidebar"></div>
+
+    <div class="main">
+      <header class="topbar">
+        <button class="btn-icon d-lg-none" type="button" data-act="bukaMenu" aria-label="Buka menu"><i class="bi bi-list fs-5"></i></button>
+        <div class="title flex-grow-1 min-w-0">
+          <small>SIPANTAU-HP • Pos Pintu 2</small>
+          <span id="pageTitle" class="truncate d-block">Beranda</span>
+        </div>
+        <div class="pill d-none d-md-block">
+          <span class="lbl"><span class="live-dot me-1"></span> Waktu Nabire</span>
+          <b id="witClock">--:--:--</b>
+        </div>
+        <div class="pill d-none d-sm-block">
+          <span class="lbl">Shift aktif</span>
+          <b id="shiftNow">-</b>
+        </div>
+        <button class="btn-icon d-none d-lg-inline-flex align-items-center justify-content-center" type="button" data-act="tema" aria-label="Mode gelap"><i class="bi bi-circle-half"></i></button>
+      </header>
+
+      <!-- KONTAINER UTAMA SPA: semua halaman disuntikkan di sini (URL tidak pernah berubah) -->
+      <main id="app-container" class="content" tabindex="-1"></main>
+    </div>
+
+    <nav id="bottomNav" class="bottom-nav" aria-label="Navigasi bawah"><div class="wrap"></div></nav>
+  </div>
+
+  <!-- ═══════════ MODAL UMUM (form dinamis) ═══════════ -->
+  <div class="modal fade" id="modalUmum" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fs-6 fw-bold" id="modalUmumTitle">-</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body" id="modalUmumBody"></div>
+        <div class="modal-footer" id="modalUmumFoot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Konfirmasi -->
+  <div class="modal fade" id="modalKonfirmasi" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fs-6 fw-bold" id="konfJudul">Konfirmasi</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+          <p id="konfPesan" class="mb-2"></p>
+          <div id="konfInputWrap" class="hidden">
+            <label class="form-label" for="konfInput" id="konfInputLabel">Catatan</label>
+            <textarea class="form-control" id="konfInput" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-navy" id="konfOk">Ya, lanjutkan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Pratinjau (foto / PDF) -->
+  <div class="modal fade" id="modalPreview" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fs-6 fw-bold" id="previewJudul">Pratinjau</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body text-center" id="previewIsi"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-soft" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Tutup</button>
+          <a id="previewUnduh" class="btn btn-navy" download><i class="bi bi-download"></i> Unduh</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:2600">
+    <div id="appToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto" id="toastTitle">Info</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Tutup"></button>
+      </div>
+      <div class="toast-body" id="toastBody"></div>
+    </div>
+  </div>
+
+  <!-- Tempat kerja tersembunyi untuk membuat QR & scan dari foto -->
+  <div id="qrWork" style="position:absolute;left:-9999px;top:0"></div>
+  <div id="readerFile" style="position:absolute;left:-9999px;top:0;width:600px;height:600px" aria-hidden="true"></div>
+
+  <!-- Library inti (defer = tidak menghambat tampilan). Chart.js, pemindai QR, pembuat QR & modul admin
+       dimuat otomatis hanya saat dibutuhkan (lihat PUSTAKA di js/app.js). -->
+  <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Konfigurasi (URL backend GAS) lalu logika aplikasi -->
+  <script defer src="js/config.js"></script>
+  <script defer src="js/app.js?v=2"></script>
+</body>
+</html>
